@@ -11,7 +11,7 @@ return new class extends Migration {
             $table->id();
             $table->string('id_externe')->unique();
             $table->string('nom');
-            $table->enum('type', ['maternelle', 'elementaire', 'college', 'lycee']);
+            $table->string('type')->nullable();
             $table->string('adresse')->nullable();
             $table->string('ville')->nullable();
             $table->string('code_postal', 20)->nullable();

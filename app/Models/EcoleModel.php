@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Ecole extends Model
+class EcoleModel extends Model
 {
     use HasFactory;
 
@@ -24,11 +24,11 @@ class Ecole extends Model
 
     public function menus()
     {
-        return $this->hasMany(Menu::class, 'ecole_id');
+        return $this->hasMany(MenuModel::class, 'ecole_id');
     }
 
     public function enfants()
     {
-        return $this->hasMany(Enfant::class, 'ecole_id');
+        return $this->hasMany(EnfantModel::class, 'ecole_id');
     }
 }

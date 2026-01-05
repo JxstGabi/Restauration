@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class MenuPartage extends Model
+class MenuPartageModel extends Model
 {
     use HasFactory;
 
@@ -19,11 +19,11 @@ class MenuPartage extends Model
 
     public function enfant()
     {
-        return $this->belongsTo(Enfant::class, 'enfant_id');
+        return $this->belongsTo(EnfantModel::class, 'enfant_id');
     }
 
     public function menu()
     {
-        return $this->belongsTo(Menu::class, 'menu_id');
+        return $this->belongsTo(MenuModel::class, 'menu_id');
     }
 }
