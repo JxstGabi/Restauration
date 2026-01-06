@@ -13,4 +13,5 @@ class EcoleController extends Controller
 
         return view('accueil', compact('ecoles'));
     }
+    
 }
