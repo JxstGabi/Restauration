@@ -7,15 +7,30 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
-        /* règle spécifique à cette page */
         html, body {
             overflow: hidden;
             margin: 0;
             height: 100%;
         }
+
+        /* Container principal en flex */
+        .flex-container {
+            display: flex;
+            height: calc(100vh - 96px); /* header = 96px */
+        }
+
+        aside {
+            width: 18rem;
+            overflow-y: auto;
+        }
+        main {
+            flex: 1;
+            height: 100%;
+        }
+
         #map {
-            height: calc(100vh - 96px);
-            width: 100%;
+            flex: 1;
+            height: 100%;
         }
     </style>
 @endsection
@@ -30,225 +45,183 @@
 @endsection
 
 @section('content')
+<div class="flex-container">
 
-<div class="flex">
+    <!-- SIDEBAR -->
+    <aside class="bg-white shadow-lg p-6 border-r">
+        <h2 class="text-xl font-semibold mb-4">Filtres</h2>
 
-<!-- SIDEBAR -->
-<aside class="w-72 bg-white shadow-lg h-[calc(100vh-96px)] p-6 border-r overflow-y-auto">
+        <div class="space-y-5">
+            <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" class="filter" value="maternelle" checked>
+                <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png" class="w-4 h-7">
+                <span class="text-sm">Maternelle</span>
+            </label>
 
-    <h2 class="text-xl font-semibold mb-4">Filtres</h2>
+            <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" class="filter" value="elementaire" checked>
+                <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png" class="w-4 h-7">
+                <span class="text-sm">Élémentaire</span>
+            </label>
 
-    <div class="space-y-5">
-        <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" class="filter" value="maternelle" checked>
-            <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png" class="w-4 h-7">
-            <span class="text-sm">Maternelle</span>
-        </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" class="filter" value="primaire" checked>
+                <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png" class="w-4 h-7">
+                <span class="text-sm">Groupe scolaire / Primaire</span>
+            </label>
+        </div>
 
-        <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" class="filter" value="elementaire" checked>
-            <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png" class="w-4 h-7">
-            <span class="text-sm">Élémentaire</span>
-        </label>
+        <div class="my-8 border-t border-gray-300"></div>
 
-        <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" class="filter" value="primaire" checked>
-            <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png" class="w-4 h-7">
-            <span class="text-sm">Groupe scolaire / Primaire</span>
-        </label>
-    </div>
+        <h2 class="text-xl font-semibold mb-4">Écoles</h2>
+        <input type="text" id="searchInput" placeholder="Rechercher une école..."
+               class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        <div id="schoolList" class="mt-4 space-y-2 text-sm"></div>
 
-    <div class="my-8 border-t border-gray-300"></div>
+        <div class="flex justify-between items-center mt-4 text-sm">
+            <button id="prevPage" class="px-3 py-1 border rounded disabled:opacity-50">◀</button>
+            <span id="pageInfo"></span>
+            <button id="nextPage" class="px-3 py-1 border rounded disabled:opacity-50">▶</button>
+        </div>
+    </aside>
 
-    <h2 class="text-xl font-semibold mb-4">Écoles</h2>
-
-    <input
-        type="text"
-        id="searchInput"
-        placeholder="Rechercher une école..."
-        class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-    >
-
-    <div id="schoolList" class="mt-4 space-y-2 text-sm"></div>
-
-    <!-- PAGINATION -->
-    <div class="flex justify-between items-center mt-4 text-sm">
-        <button id="prevPage" class="px-3 py-1 border rounded disabled:opacity-50">◀</button>
-        <span id="pageInfo"></span>
-        <button id="nextPage" class="px-3 py-1 border rounded disabled:opacity-50">▶</button>
-    </div>
-
-</aside>
-
-<!-- MAP -->
-<main class="flex-1">
-    <div id="map"></div>
-</main>
+    <!-- MAP -->
+    <main>
+        <div id="map"></div>
+    </main>
 
 </div>
-
 @endsection
 
 @section('scripts')
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <script>
-/* =========================
-   MAP
-========================= */
-const map = L.map('map').setView([47.4736, -0.5542], 13);
+<script>
+document.addEventListener("DOMContentLoaded", function() {
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap'
-}).addTo(map);
+    /* =========================
+       MAP
+    ========================= */
+    const map = L.map('map').setView([47.4736, -0.5542], 13);
 
-/* =========================
-   ICONS
-========================= */
-const iconBlue = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png', shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png', iconSize: [25,41], iconAnchor: [12,41] });
-const iconGreen = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png', shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png', iconSize: [25,41], iconAnchor: [12,41] });
-const iconOrange = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png', shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png', iconSize: [25,41], iconAnchor: [12,41] });
-const iconRed = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png', shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png', iconSize: [25,41], iconAnchor: [12,41] });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
 
-function getMarkerIcon(type) {
-    if (type === "maternelle") return iconBlue;
-    if (type === "elementaire") return iconGreen;
-    if (type === "primaire") return iconOrange;
-    return iconRed;
-}
+    /* =========================
+       ICONS
+    ========================= */
+    const iconBlue = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png', shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png', iconSize: [25,41], iconAnchor: [12,41] });
+    const iconGreen = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png', shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png', iconSize: [25,41], iconAnchor: [12,41] });
+    const iconOrange = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png', shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png', iconSize: [25,41], iconAnchor: [12,41] });
+    const iconRed = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png', shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png', iconSize: [25,41], iconAnchor: [12,41] });
 
-/* =========================
-   GEOLOCALISATION (FIX)
-========================= */
-let userMarker = null;
+    function getMarkerIcon(type) {
+        if (type === "maternelle") return iconBlue;
+        if (type === "elementaire") return iconGreen;
+        if (type === "primaire") return iconOrange;
+        return iconRed;
+    }
 
-if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
+    /* =========================
+       GEOLOCALISATION
+    ========================= */
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
 
-        userMarker = L.marker([lat, lng], {
-            icon: iconRed
-        }).addTo(map).bindPopup("Vous êtes ici");
+            L.marker([lat, lng], { icon: iconRed })
+             .addTo(map)
+             .bindPopup("Vous êtes ici");
 
-        map.setView([lat, lng], 14);
-    });
-}
+            map.setView([lat, lng], 14);
+        });
+    }
 
-/* =========================
-   DATA
-========================= */
-const ecoles = @json($ecoles);
-const markers = [];
+    /* =========================
+       DATA
+    ========================= */
+    const ecoles = @json($ecoles);
+    const markers = [];
+    const searchInput = document.getElementById("searchInput");
+    const schoolList = document.getElementById("schoolList");
+    let currentPage = 1;
+    const perPage = 8;
 
-const searchInput = document.getElementById("searchInput");
-const schoolList = document.getElementById("schoolList");
+    function getTypeSimplifie(type) {
+        if (!type) return null;
+        const t = type.toLowerCase();
+        if (t.includes("maternelle")) return "maternelle";
+        if (t.includes("élémentaire") || t.includes("elementaire")) return "elementaire";
+        if (t.includes("primaire") || t.includes("groupe")) return "primaire";
+        return null;
+    }
 
-let currentPage = 1;
-const perPage = 8;
+    function refreshUI() {
+        const query = searchInput.value.toLowerCase();
+        const filtresActifs = Array.from(document.querySelectorAll(".filter:checked")).map(f => f.value);
 
-/* =========================
-   UTILS
-========================= */
-function getTypeSimplifie(type) {
-    const t = type.toLowerCase();
-    if (t.includes("maternelle")) return "maternelle";
-    if (t.includes("élémentaire") || t.includes("elementaire")) return "elementaire";
-    if (t.includes("primaire") || t.includes("groupe")) return "primaire";
-    return null;
-}
+        // clear markers
+        markers.forEach(m => map.removeLayer(m));
+        markers.length = 0;
 
-/* =========================
-   REFRESH UI
-========================= */
-function refreshUI() {
-    const query = searchInput.value.toLowerCase();
-    const filtresActifs = Array.from(document.querySelectorAll(".filter:checked")).map(f => f.value);
+        const filtered = ecoles.filter(e => {
+            const type = getTypeSimplifie(e.type);
+            return e.latitude && e.longitude &&
+                   type && filtresActifs.includes(type) &&
+                   e.nom.toLowerCase().includes(query);
+        });
 
-    // MARKERS (TOUS)
-    markers.forEach(m => map.removeLayer(m));
-    markers.length = 0;
+        filtered.forEach(ecole => {
+            const type = getTypeSimplifie(ecole.type);
 
-    const filtered = ecoles.filter(e => {
-        const type = getTypeSimplifie(e.type);
-        return e.latitude && e.longitude &&
-               type && filtresActifs.includes(type) &&
-               e.nom.toLowerCase().includes(query);
-    });
+            const marker = L.marker([ecole.latitude, ecole.longitude], {
+                icon: getMarkerIcon(type)
+            }).addTo(map);
 
-    filtered.forEach(ecole => {
-        const type = getTypeSimplifie(ecole.type);
+            const popupContent = `<strong><a href="/menus?school=${encodeURIComponent(ecole.nom)}">${ecole.nom}</a></strong><br>${ecole.type}`;
+            marker.bindPopup(popupContent);
+            markers.push(marker);
+        });
 
-        const marker = L.marker([ecole.latitude, ecole.longitude], {
-            icon: getMarkerIcon(type)
-        }).addTo(map);
+        // Liste paginée
+        schoolList.innerHTML = "";
+        const start = (currentPage - 1) * perPage;
+        const paginated = filtered.slice(start, start + perPage);
 
-        // Le nom devient un lien vers la page des menus pour cette école
-        const popupContent = `<strong><a href="/menus?school=${encodeURIComponent(ecole.nom)}">${ecole.nom}</a></strong><br>${ecole.type}`;
-        marker.bindPopup(popupContent);
-        markers.push(marker);
-    });
+        paginated.forEach(ecole => {
+            const type = getTypeSimplifie(ecole.type);
+            const color =
+                type === "maternelle" ? "border-blue-500" :
+                type === "elementaire" ? "border-green-500" :
+                "border-orange-500";
 
-    // LIST PAGINATED
-    schoolList.innerHTML = "";
-    const start = (currentPage - 1) * perPage;
-    const paginated = filtered.slice(start, start + perPage);
+            const item = document.createElement("div");
+            item.className = `border-l-4 ${color} pl-3 py-2 rounded hover:bg-gray-100 cursor-pointer`;
+            item.innerHTML = `<div class="font-medium">${ecole.nom}</div><div class="text-xs text-gray-500">${ecole.type}</div>`;
 
-    paginated.forEach(ecole => {
-        const type = getTypeSimplifie(ecole.type);
-        const color =
-            type === "maternelle" ? "border-blue-500" :
-            type === "elementaire" ? "border-green-500" :
-            "border-orange-500";
+            item.onclick = () => map.setView([ecole.latitude, ecole.longitude], 16);
 
-        const item = document.createElement("div");
-        item.className = `border-l-4 ${color} pl-3 py-2 rounded hover:bg-gray-100 cursor-pointer`;
+            schoolList.appendChild(item);
+        });
 
-        item.innerHTML = `<div class="font-medium">${ecole.nom}</div><div class="text-xs text-gray-500">${ecole.type}</div>`;
+        document.getElementById("pageInfo").textContent =
+            `Page ${currentPage} / ${Math.max(1, Math.ceil(filtered.length / perPage))}`;
 
-        item.onclick = () => {
-            map.setView([ecole.latitude, ecole.longitude], 16);
-        };
+        document.getElementById("prevPage").disabled = currentPage === 1;
+        document.getElementById("nextPage").disabled = currentPage >= Math.ceil(filtered.length / perPage);
+    }
 
-        schoolList.appendChild(item);
-    });
+    // EVENTS
+    searchInput.addEventListener("input", () => { currentPage = 1; refreshUI(); });
+    document.querySelectorAll(".filter").forEach(f => f.addEventListener("change", () => { currentPage = 1; refreshUI(); }));
+    document.getElementById("prevPage").onclick = () => { currentPage--; refreshUI(); };
+    document.getElementById("nextPage").onclick = () => { currentPage++; refreshUI(); };
 
-    document.getElementById("pageInfo").textContent =
-        `Page ${currentPage} / ${Math.max(1, Math.ceil(filtered.length / perPage))}`;
-
-    document.getElementById("prevPage").disabled = currentPage === 1;
-    document.getElementById("nextPage").disabled = currentPage >= Math.ceil(filtered.length / perPage);
-}
-
-/* =========================
-   EVENTS
-========================= */
-searchInput.addEventListener("input", () => {
-    currentPage = 1;
     refreshUI();
+
 });
-
-document.querySelectorAll(".filter").forEach(f =>
-    f.addEventListener("change", () => {
-        currentPage = 1;
-        refreshUI();
-    })
-);
-
-document.getElementById("prevPage").onclick = () => {
-    currentPage--;
-    refreshUI();
-};
-
-document.getElementById("nextPage").onclick = () => {
-    currentPage++;
-    refreshUI();
-};
-
-/* INIT */
-refreshUI();
 </script>
-
-</body>
-</html>
+@endsection
