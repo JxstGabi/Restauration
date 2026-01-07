@@ -11,7 +11,7 @@ class EcoleController extends Controller
         // On récupère toutes les écoles
         $ecoles = EcoleModel::all();
 
-        return view('accueil', compact('ecoles'));
+        return view('map', compact('ecoles'));
     }
     
 }

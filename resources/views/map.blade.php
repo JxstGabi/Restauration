@@ -36,10 +36,17 @@
 @endsection
 
 @section('header')
-    <header class="bg-blue-600 text-white py-6 shadow-md">
-        <div class="max-w-6xl mx-auto px-4">
-            <h1 class="text-3xl font-bold">Carte des écoles d'Angers</h1>
-            <p class="text-blue-100 mt-1">Localisez facilement les établissements scolaires</p>
+    <header class="bg-blue-600 text-white py-6 shadow-md relative">
+        <div class="max-w-6xl mx-auto px-4 flex items-center justify-center relative transform">
+            <a href="{{ route('bienvenue') }}" class="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-blue-500 transition-colors" title="Retour à l'accueil">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                </svg>
+            </a>
+            <div class="text-center">
+                <h1 class="text-3xl font-bold">Carte des écoles d'Angers</h1>
+                <p class="text-blue-100 mt-1">Localisez facilement les établissements scolaires</p>
+            </div>
         </div>
     </header>
 @endsection
