@@ -51,7 +51,9 @@
                                     {{ $enfant->prenom }}
                                 </h3>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-[10px] text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-200 truncate max-w-[150px]">{{ $enfant->ecole->nom }}</span>
+                                    <a href="{{ route('menus.index', ['school' => $enfant->ecole->nom]) }}" class="text-[10px] text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-200 truncate max-w-[150px] hover:text-blue-600 hover:border-blue-300 transition-colors" title="Accéder aux menus de {{ $enfant->ecole->nom }}">
+                                        {{ $enfant->ecole->nom }}
+                                    </a>
                                     
                                     {{-- Dropdown de partage --}}
                                     <div class="relative group/share">

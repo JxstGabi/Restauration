@@ -11,6 +11,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('utilisateur_id'); // lié à la table users si tu utilises l'auth Laravel
             $table->string('prenom');
+            $table->boolean('sexe')->nullable();
             $table->foreignId('ecole_id')->constrained('ecoles')->onDelete('cascade');
             $table->timestamps();
 

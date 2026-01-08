@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ecoles', function (Blueprint $table) {
-            //
+            $table->integer('restaurant_id')->nullable()->after('id_externe');
+            $table->string('restaurant_nom')->nullable()->after('restaurant_id');
         });
     }
 
@@ -22,8 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ecoles', function (Blueprint $table) {
-        $table->integer('restaurant_id')->nullable()->after('id_externe');
-        $table->string('restaurant_nom')->nullable()->after('restaurant_id');
-    });
+            $table->dropColumn(['restaurant_id', 'restaurant_nom']);
+        });
     }
 };
