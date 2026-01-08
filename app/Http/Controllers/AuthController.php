@@ -26,7 +26,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            return redirect()->intended(route('map'));
+            return redirect()->intended(route('bienvenue'));
         }
 
         return back()->withErrors([
@@ -57,7 +57,7 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('map'));
+        return redirect(route('bienvenue'));
     }
 
     // Déconnexion

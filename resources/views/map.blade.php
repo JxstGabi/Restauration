@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Restauration scolaire - Carte des écoles')
+@section('title', 'Carte des écoles')
 
 @section('styles')
     <!-- Leaflet -->

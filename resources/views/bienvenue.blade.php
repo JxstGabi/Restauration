@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Bienvenue - Restauration Scolaire')
+@section('title', 'Bienvenue')
 
 @section('header')
 <header class="bg-blue-600 text-white py-6 shadow-md relative z-20">
@@ -26,13 +26,8 @@
 @endsection
 
 @section('content')
-<!-- Background Image -->
-<div class="fixed inset-0 z-0">
-    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('{{ asset('images/repas-de-famille.jpg') }}'); filter: blur(4px);"></div>
-    <div class="absolute inset-0 bg-black/10"></div>
-</div>
 
-<div class="h-[calc(100vh-96px)] flex items-center justify-center px-4 relative z-10 overflow-hidden">
+<div class="h-[calc(100vh-96px)] flex items-center justify-center px-4 overflow-hidden">
     
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl max-h-full">
         
@@ -50,7 +45,7 @@
                         <div class="child-menu-item bg-gray-50 rounded-xl p-4 border border-gray-100" data-school="{{ $enfant->ecole->nom }}">
                             <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-200">
                                 <h3 class="font-bold text-gray-800 flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                    <span class="w-2 h-2 rounded-full {{ is_null($enfant->sexe) ? 'bg-gray-400' : ($enfant->sexe == 1 ? 'bg-pink-500' : 'bg-blue-500') }}"></span>
                                     {{ $enfant->prenom }}
                                 </h3>
                                 <span class="text-[10px] text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-200 truncate max-w-[150px]">{{ $enfant->ecole->nom }}</span>

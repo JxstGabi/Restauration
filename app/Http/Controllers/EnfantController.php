@@ -35,12 +35,14 @@ class EnfantController extends Controller
         $request->validate([
             'prenom' => 'required|string|max:255',
             'ecole_id' => 'required|exists:ecoles,id',
+            'sexe' => 'nullable|integer|in:0,1',
         ]);
 
         EnfantModel::create([
             'utilisateur_id' => Auth::id(),
             'prenom' => $request->prenom,
             'ecole_id' => $request->ecole_id,
+            'sexe' => $request->sexe,
         ]);
 
         return redirect()->route('enfants.index')->with('success', 'Enfant ajouté avec succès !');
@@ -71,11 +73,13 @@ class EnfantController extends Controller
         $request->validate([
             'prenom' => 'required|string|max:255',
             'ecole_id' => 'required|exists:ecoles,id',
+            'sexe' => 'nullable|integer|in:0,1',
         ]);
 
         $enfant->update([
             'prenom' => $request->prenom,
             'ecole_id' => $request->ecole_id,
+            'sexe' => $request->sexe,
         ]);
 
         return redirect()->route('enfants.index')->with('success', 'Informations mises à jour.');

@@ -15,6 +15,7 @@ class EnfantModel extends Model
         'utilisateur_id',
         'prenom',
         'ecole_id',
+        'sexe',
     ];
 
     public function ecole()

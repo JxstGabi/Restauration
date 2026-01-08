@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Ajouter un enfant - Restauration Scolaire')
+@section('title', 'Ajouter un enfant')
 
 @section('header')
 <header class="bg-blue-600 text-white py-6 shadow-md relative">
@@ -26,6 +26,24 @@
                         @error('prenom')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    <div>
+                        <span class="block text-sm font-medium text-gray-700 mb-1">Sexe (Optionnel)</span>
+                        <div class="flex items-center space-x-4">
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="sexe" value="0" class="peer sr-only">
+                                <div class="px-4 py-2 rounded-md border border-gray-300 text-gray-700 bg-white group-hover:bg-gray-50 peer-checked:bg-blue-500 peer-checked:text-white peer-checked:border-blue-500 transition-all shadow-sm flex items-center gap-2">
+                                    <span>👦</span> Garçon
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="sexe" value="1" class="peer sr-only">
+                                <div class="px-4 py-2 rounded-md border border-gray-300 text-gray-700 bg-white group-hover:bg-gray-50 peer-checked:bg-pink-500 peer-checked:text-white peer-checked:border-pink-500 transition-all shadow-sm flex items-center gap-2">
+                                    <span>👧</span> Fille
+                                </div>
+                            </label>
+                        </div>
                     </div>
 
                     <div>
@@ -67,6 +85,21 @@
 
 @section('scripts')
 <script>
+    // Deselect radio button on double click
+    const radios = document.querySelectorAll('input[type="radio"][name="sexe"]');
+    let previousValue = null;
+
+    radios.forEach(radio => {
+        radio.addEventListener('click', function() {
+            if (this.value === previousValue) {
+                this.checked = false;
+                previousValue = null;
+            } else {
+                previousValue = this.value;
+            }
+        });
+    });
+
     const schools = @json($ecoles);
     const input = document.getElementById('ecole_input');
     const hiddenInput = document.getElementById('ecole_id');

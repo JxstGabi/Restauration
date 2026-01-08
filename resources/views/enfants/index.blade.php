@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Mes enfants - Restauration Scolaire')
+@section('title', 'Mes enfants')
 
 @section('header')
 <header class="bg-blue-600 text-white py-6 shadow-md relative">
