@@ -13,7 +13,7 @@
         </a>
         <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center space-x-4">
             @auth
-                <span class="text-sm text-blue-100 hidden sm:inline">Bonjour, {{ Auth::user()->name }}</span>
+                <a href="{{ route('profile.edit') }}" class="text-sm text-blue-100 hover:text-white hidden sm:inline transition-colors hover:underline" title="Modifier mon profil">Bonjour, {{ Auth::user()->name }}</a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="text-sm bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded transition-colors border border-white/20">
@@ -111,12 +111,17 @@ let currentMonday = getMonday(new Date());
 const mappingMenusEcoles = {
     "ECOLE BENIER": "École maternelle Charles Benier École élémentaire Charles Benier",
     "ECOLE BLANCHERAIE": "École élémentaire La Blancheraie École maternelle La Blancheraie",
+    "ECOLE BORDILLON": "École élémentaire Grégoire Bordillon",
     "ECOLE BROSSARD": "École primaire René Brossard",
     "ECOLE CHIRON": "École élémentaire Henri Chiron École maternelle Henri Chiron",
+    "ECOLE CLEMENT": "École élémentaire Alfred Clément",
     "ECOLE CONDORCET": "École élémentaire Condorcet École maternelle Condorcet",
     "ECOLE CURIE": "École élémentaire Pierre et Marie Curie École maternelle Pierre et Marie Curie",
+    "ECOLE CUSSONNEAU M": "École maternelle Joseph Cussonneau",
+    "ECOLE CUSSONNEAU P": "École élémentaire Joseph Cussonneau",
     "ECOLE DACIER": "École primaire Anne Dacier",
     "ECOLE DESCARTES": "École maternelle Descartes",
+    "ECOLE DESNOS": "École élémentaire Robert Desnos École maternelle Robert Desnos",
     "ECOLE FERRARO": "École maternelle Aldo Ferraro École élémentaire Aldo Ferraro",
     "ECOLE FRATELLINI": "École primaire Annie Fratellini",
     "ECOLE GASNIER": "École primaire René Gasnier",
@@ -124,13 +129,16 @@ const mappingMenusEcoles = {
     "ECOLE ISORET": "École maternelle Isoret École élémentaire Isoret",
     "ECOLE LAREVELLIERE": "École primaire Larévellière",
     "ECOLE LEBAS": "Groupe scolaire Pierre-Louis Lebas",
+    "ECOLE MANDELA": "Cité éducative Nelson Mandela",
     "ECOLE MAULEVRIES": "École primaire Les Grandes Maulévriès",
+    "ECOLE MOLLIERES": "École primaire Bois de Mollières",
     "ECOLE MONET": "École élémentaire Claude Monet École maternelle Claude Monet",
     "ECOLE MONTESQUIEU": "École maternelle Montesquieu",
     "ECOLE MUSSET": "École élémentaire Alfred de Musset École maternelle Alfred de Musset",
     "ECOLE PAGNOL": "École élémentaire Marcel Pagnol École maternelle Marcel Pagnol",
     "ECOLE PARCHEMINERIE": "École maternelle Parcheminerie",
     "ECOLE PERUSSAIE": "École primaire La Pérussaie",
+    "ECOLE PHILIPE": "Groupe scolaire Gérard Philipe",
     "ECOLE PREVERT": "École maternelle Jacques Prévert École élémentaire Jacques Prévert",
     "ECOLE RASPAIL": "École primaire François Raspail",
     "ECOLE ROSTAND": "École primaire Jean Rostand",
@@ -138,7 +146,10 @@ const mappingMenusEcoles = {
     "ECOLE TALET": "École élémentaire Marie Talet École maternelle Marie Talet",
     "ECOLE TIGEOT": "École élémentaire Adrien Tigeot École maternelle Adrien Tigeot",
     "ECOLE VALERY": "École maternelle Paul Valéry École élémentaire Paul Valéry",
-    "ECOLE VERNE": "École élémentaire Jules Verne École maternelle Jules Verne"
+    "ECOLE VERNE": "École élémentaire Jules Verne École maternelle Jules Verne",
+    "ECOLE VILAR": "Groupe scolaire Jean Vilar École maternelle Jean Vilar École élémentaire Jean Vilar",
+    "ECOLE VOLNEY": "École maternelle Volney",
+    "ECOLE VOLTAIRE": "École maternelle Voltaire École élémentaire Voltaire"
 };
 
 /* ============================

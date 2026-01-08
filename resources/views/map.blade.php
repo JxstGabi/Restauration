@@ -56,7 +56,7 @@
             </div>
             <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center space-x-4">
                 @auth
-                    <span class="text-sm text-blue-100 hidden sm:inline">Bonjour, {{ Auth::user()->name }}</span>
+                    <a href="{{ route('profile.edit') }}" class="text-sm text-blue-100 hover:text-white hidden sm:inline transition-colors hover:underline" title="Modifier mon profil">Bonjour, {{ Auth::user()->name }}</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="text-sm bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded transition-colors border border-white/20">
