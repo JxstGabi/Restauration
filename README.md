@@ -31,21 +31,22 @@ npm install
 
 ### 3. Configuration de l'environnement
 
-Dupliquez le fichier d'exemple pour créer votre configuration locale :
+Le projet est configuré pour se connecter à une base de données de test spécifique.
+Copiez le fichier `.env.example` vers `.env` (si ce n'est pas déjà fait) et utilisez la configuration suivante :
 
 ```bash
 cp .env.example .env
 ```
 
-Ouvrez le fichier `.env` et configurez vos accès à la base de données :
+Modifiez le fichier `.env` avec les identifiants suivants (déjà configurés pour le projet) :
 
 ```env
 DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
+DB_HOST=192.168.10.16
 DB_PORT=3306
-DB_DATABASE=votre_nom_de_db
-DB_USERNAME=votre_user
-DB_PASSWORD=votre_password
+DB_DATABASE=gautret_restauration
+DB_USERNAME=gautret
+DB_PASSWORD=z2zS5qOm
 ```
 
 Générez la clé d'application Laravel :
@@ -54,40 +55,33 @@ Générez la clé d'application Laravel :
 php artisan key:generate
 ```
 
-### 4. Base de données
+### 4. Base de données (Terminé !)
 
-Créez la base de données spécifiée dans votre `.env`, puis exécutez les migrations :
+✅ **Vous êtes connecté à la base de données partagée.**
+Comme vous utilisez la base commune (`192.168.10.16`), **vous n'avez rien d'autre à faire.** Les tables et les données (écoles, menus) sont déjà présentes.
 
-```bash
-php artisan migrate
-```
+**Passez directement à l'étape "Lancement de l'application".**
 
-## 📦 Initialisation des données (Open Data)
+---
 
-L'application s'appuie sur les données ouvertes de la ville d'Angers. Vous devez exécuter les commandes personnalisées suivantes pour peupler la base de données.
+*(Uniquement si vous souhaitez créer votre propre base locale vide :)*
 
-**Important :** Exécutez ces commandes dans l'ordre suivant.
+Si vous décidez de ne pas utiliser la base partagée, modifiez le `.env` vers votre base locale, puis :
 
-1. **Synchroniser la liste des écoles :**
-   Cette commande récupère les écoles depuis l'API OpenData d'Angers.
+1. Créez la structure :
+   ```bash
+   php artisan migrate
+   ```
+2. Importez les données :
    ```bash
    php artisan sync:ecoles
-   ```
-
-2. **Importer les menus :**
-   Cette commande récupère les menus associés aux écoles.
-   ```bash
    php artisan menus:import
    ```
-
-*(Optionnel) Créer un utilisateur de test :*
-```bash
-php artisan db:seed
-```
+---
 
 ## 🏃 Lancement de l'application
 
-Vous aurez besoin de deux terminaux pour lancer l'application en mode développement.
+Pour lancer l'environnement de développement complet, ouvrez deux terminaux :
 
 **Terminal 1 : Compilation des assets (Vite)**
 ```bash
@@ -99,11 +93,23 @@ npm run dev
 php artisan serve
 ```
 
-L'application sera accessible à l'adresse : [http://127.0.0.1:8000](http://127.0.0.1:8000).
+L'application sera accessible sur : [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
-## 🛠️ Fonctionnalités
+## 🛠️ Fonctionnalités Clés
 
-- **Carte interactive** : Visualisation des écoles sur une carte (OpenStreetMap / Leaflet).
-- **Menus détaillés** : Consultation des menus de la semaine pour chaque école.
-- **Gestion famille** : Ajout d'enfants et association à leur école.
-- **Partage** : Possibilité de partager le menu d'un enfant via un lien unique sécurisé.
+- **🏠 Tableau de bord Famille** : Gestion centralisée des enfants et accès rapide aux menus via des liens directs sur les écoles.
+- **🗺️ Carte Interactive** : 
+  - Visualisation de toutes les écoles d'Angers.
+  - Bouton de **géolocalisation** pour centrer la carte sur votre position.
+  - Informations détaillées au clic (adresse, type).
+- **🍽️ Menus Scolaires** : 
+  - Affichage clair des repas de la semaine.
+  - Gestion des intolérances (affichage des compositions si disponibles).
+- **🔗 Partage Social** : 
+  - Génération de liens de partage publics pour les grands-parents ou nounous.
+  - Boutons de partage rapide (WhatsApp, Email).
+- **👤 Gestion de Compte** : 
+  - Modification des informations personnelles.
+  - Option de suppression de compte sécurisée.
+- **⚡ Raccourcis UX** : 
+  - Création rapide de fratries (copie de l'école du frère/sœur en un clic).
