@@ -1,60 +1,81 @@
-# Installation et lancement du projet
+Installation et lancement du projet Laravel
+Prérequis
 
-## Prérequis
+Avant de commencer, assurez-vous d’avoir installé sur votre machine :
 
-- PHP >= 8.1
-- Composer
-- Node.js & npm
+PHP (version recommandée : 8.1 ou supérieure)
 
----
+Composer
 
-## Installation
+MySQL (ou un autre SGBD compatible)
 
-### 1. Cloner le projet
-```bash
-git clone https://github.com/ton-utilisateur/nom-du-repo.git
-cd nom-du-repo
-2. Installer les dépendances PHP
-bash
-Copier le code
+Node.js & npm (optionnel, mais recommandé)
+
+Un serveur local (Laragon, XAMPP, WAMP, ou équivalent)
+
+Installation du projet
+
+Cloner le dépôt
+
+git clone <url-du-depot>
+cd <nom-du-projet>
+
+
+Installer les dépendances PHP
+
 composer install
-3. Installer les dépendances front-end
-bash
-Copier le code
-npm install
-Configuration
-4. Créer le fichier .env
-bash
-Copier le code
-cp .env.example .env
-Configurer la base de données dans le fichier .env :
 
-env
-Copier le code
+
+Créer le fichier d’environnement
+
+cp .env.example .env
+
+
+Configurer l’environnement
+
+Ouvrir le fichier .env
+
+Renseigner les informations de la base de données :
+
 DB_DATABASE=nom_de_la_base
 DB_USERNAME=utilisateur
 DB_PASSWORD=mot_de_passe
-5. Générer la clé de l’application
-bash
-Copier le code
+
+
+Générer la clé de l’application
+
 php artisan key:generate
-Base de données
-Lancer les migrations :
 
-bash
-Copier le code
+
+Exécuter les migrations (si nécessaire)
+
 php artisan migrate
-Lancer le projet
-Serveur Laravel
-bash
-Copier le code
-php artisan serve
-Accès au projet :
 
-cpp
-Copier le code
-http://127.0.0.1:8000
-Assets front-end
-bash
-Copier le code
+Installation des dépendances front-end (optionnel)
+
+Si le projet utilise des assets front-end :
+
+npm install
+npm run build
+
+
+ou en mode développement :
+
 npm run dev
+
+Lancer le projet
+
+Démarrer le serveur de développement Laravel :
+
+php artisan serve
+
+
+L’application sera accessible à l’adresse suivante :
+
+http://127.0.0.1:8000
+
+Arrêt du serveur
+
+Pour arrêter le serveur, utilisez :
+
+CTRL + C
