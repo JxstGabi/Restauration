@@ -5,8 +5,6 @@
 - PHP >= 8.1
 - Composer
 - Node.js & npm
-- MySQL
-- Serveur local (Laragon, XAMPP, WAMP…)
 
 ---
 
