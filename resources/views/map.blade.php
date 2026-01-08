@@ -40,11 +40,20 @@
 @section('header')
     <header class="bg-blue-600 text-white py-6 shadow-md relative">
         <div class="max-w-6xl mx-auto px-4 flex items-center justify-center relative transform">
-            <a href="{{ route('bienvenue') }}" class="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-blue-500 transition-colors" title="Retour à l'accueil">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-                </svg>
-            </a>
+            <div class="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <a href="{{ route('bienvenue') }}" class="p-2 rounded-full hover:bg-blue-500 transition-colors" title="Retour à l'accueil">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                    </svg>
+                </a>
+                <button id="centerUserBtn" class="hidden sm:inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-xs px-3 py-1.5 rounded-full transition-colors border border-blue-500 shadow-sm" title="Me localiser">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Ma position</span>
+                </button>
+            </div>
             <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center space-x-4">
                 @auth
                     <span class="text-sm text-blue-100 hidden sm:inline">Bonjour, {{ Auth::user()->name }}</span>
@@ -335,6 +344,30 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("nextPage").onclick = () => { currentPage++; refreshUI(); };
 
     refreshUI();
+
+    // Recenter map on user logic
+    const centerUserBtn = document.getElementById('centerUserBtn');
+    if (centerUserBtn) {
+        centerUserBtn.addEventListener('click', () => {
+             if (userLat && userLng) {
+                 map.setView([userLat, userLng], 14);
+             } else {
+                 if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(pos => {
+                        userLat = pos.coords.latitude;
+                        userLng = pos.coords.longitude;
+                        
+                        // Update or create marker (simple version)
+                        map.setView([userLat, userLng], 14);
+                    }, () => {
+                        alert("Impossible d'accéder à votre position.");
+                    });
+                 } else {
+                     alert("Votre navigateur ne supporte pas la géolocalisation.");
+                 }
+             }
+        });
+    }
 
 });
 </script>
