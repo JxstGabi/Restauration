@@ -9,6 +9,8 @@ use App\Models\EcoleModel;
 
 use Illuminate\Support\Facades\Auth;
 
+use App\Http\Controllers\ProfileController;
+
 // Page de bienvenue (Landing page)
 Route::get('/', function () {
     $ecoles = EcoleModel::orderBy('nom')->get();
@@ -26,6 +28,11 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Gestion des enfants (protégé par auth)
 Route::middleware(['auth'])->group(function () {
     Route::resource('enfants', EnfantController::class)->except(['show']);
+    
+    // Gestion du profil
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // Page carte (anciennement accueil)

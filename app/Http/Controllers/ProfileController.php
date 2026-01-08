@@ -45,4 +45,26 @@ class ProfileController extends Controller
 
         return redirect()->route('profile.edit')->with('status', 'profile-updated');
     }
+
+    /**
+     * Supprime le compte de l'utilisateur.
+     */
+    public function destroy(Request $request)
+    {
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+
+        Auth::logout();
+
+        /** @var \App\Models\User $user */
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
+    }
 }
