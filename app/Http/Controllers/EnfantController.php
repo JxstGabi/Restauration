@@ -14,7 +14,10 @@ class EnfantController extends Controller
      */
     public function index()
     {
-        $enfants = Auth::user()->enfants()->with('ecole')->get();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        
+        $enfants = $user->enfants()->with('ecole')->get();
         return view('enfants.index', compact('enfants'));
     }
 

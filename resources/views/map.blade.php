@@ -5,6 +5,8 @@
 @section('styles')
     <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Itinéraire Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
 
     <style>
         html, body {
@@ -107,8 +109,8 @@
     </aside>
 
     <!-- MAP -->
-    <main>
-        <div id="map"></div>
+    <main class="relative h-full w-full">
+        <div id="map" class="h-full w-full"></div>
     </main>
 
 </div>
@@ -116,9 +118,27 @@
 
 @section('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+
+    // VARIABLES GLOBALES
+    let userLat = null;
+    let userLng = null;
+    let routingControl = null;
+    let clearControl = null;
+
+    function clearRoute() {
+        if (routingControl) {
+            map.removeControl(routingControl);
+            routingControl = null;
+        }
+        if (clearControl) {
+            map.removeControl(clearControl);
+            clearControl = null;
+        }
+    }
 
     /* =========================
        MAP
@@ -150,16 +170,80 @@ document.addEventListener("DOMContentLoaded", function() {
     ========================= */
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(pos => {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
+            userLat = pos.coords.latitude;
+            userLng = pos.coords.longitude;
 
-            L.marker([lat, lng], { icon: iconRed })
+            L.marker([userLat, userLng], { icon: iconRed })
              .addTo(map)
              .bindPopup("Vous êtes ici");
 
-            map.setView([lat, lng], 14);
+            map.setView([userLat, userLng], 14);
         });
     }
+
+    /* =========================
+       ROUTING
+    ========================= */
+    const ClearRouteControl = L.Control.extend({
+        options: {
+            position: 'topright'
+        },
+        onAdd: function(map) {
+            const container = L.DomUtil.create('div', 'leaflet-control leaflet-bar');
+            const button = L.DomUtil.create('a', '', container);
+            button.innerHTML = 'Effacer l\'itinéraire';
+            button.href = '#';
+            button.role = 'button';
+            
+            // Reset Leaflet specific styles for anchor in bar
+            button.style.width = 'auto';
+            button.style.height = 'auto';
+            
+            // Custom styles
+            button.style.backgroundColor = 'white';
+            button.style.padding = '8px 12px';
+            button.style.fontWeight = 'bold';
+            button.style.color = '#dc2626';
+            button.style.textDecoration = 'none';
+            button.style.cursor = 'pointer';
+            button.style.fontSize = '13px';
+            button.style.display = 'block';
+            button.style.whiteSpace = 'nowrap';
+            
+            L.DomEvent.on(button, 'click', function(e) {
+                L.DomEvent.stop(e);
+                clearRoute();
+            });
+
+            return container;
+        }
+    });
+
+    window.tracerItineraire = function(destLat, destLng) {
+        if (!userLat || !userLng) {
+            alert("Votre position n'est pas connue. Autorisez la géolocalisation.");
+            return;
+        }
+
+        clearRoute(); // Supprime l'existant s'il y en a un
+
+        routingControl = L.Routing.control({
+            waypoints: [
+                L.latLng(userLat, userLng),
+                L.latLng(destLat, destLng)
+            ],
+            language: 'fr',
+            routeWhileDragging: false,
+            showAlternatives: false,
+            createMarker: function() { return null; },
+            lineOptions: {
+                styles: [{color: '#6FA1EC', opacity: 0.8, weight: 6}]
+            }
+        }).addTo(map);
+        
+        // Ajoute le bouton effacer comme un contrôle Leaflet en dessous du panneau d'itinéraire
+        clearControl = new ClearRouteControl().addTo(map);
+    };
 
     /* =========================
        DATA
@@ -202,7 +286,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 icon: getMarkerIcon(type)
             }).addTo(map);
 
-            const popupContent = `<strong><a href="/menus?school=${encodeURIComponent(ecole.nom)}">${ecole.nom}</a></strong><br>${ecole.type}`;
+            const popupContent = `
+                <div class="text-center">
+                    <strong><a href="/menus?school=${encodeURIComponent(ecole.nom)}" class="text-blue-600 hover:underline">${ecole.nom}</a></strong><br>
+                    <span class="text-xs text-gray-500">${ecole.type}</span><br>
+                    <button onclick="tracerItineraire(${ecole.latitude}, ${ecole.longitude})" 
+                            class="mt-2 text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">
+                        📍 Itinéraire
+                    </button>
+                </div>
+            `;
             marker.bindPopup(popupContent);
             markers.push(marker);
         });

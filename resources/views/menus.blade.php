@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Menus')
+@section('no_background', true)
 
 @section('header')
 <header class="bg-blue-600 text-white py-6 shadow-md relative">
