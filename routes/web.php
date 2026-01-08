@@ -33,3 +33,7 @@ Route::get('/map', [EcoleController::class, 'index'])->name('map');
 
 // Page listant les menus (optionnellement filtrés par `?school=Nom+ecole`)
 Route::get('/menus', [MenuController::class, 'index'])->name('menus.index');
+
+// Page de partage de menu dédiée
+Route::get('/menu-share', [MenuController::class, 'share'])->name('menus.share');
+

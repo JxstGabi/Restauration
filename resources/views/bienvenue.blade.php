@@ -48,7 +48,29 @@
                                     <span class="w-2 h-2 rounded-full {{ is_null($enfant->sexe) ? 'bg-gray-400' : ($enfant->sexe == 1 ? 'bg-pink-500' : 'bg-blue-500') }}"></span>
                                     {{ $enfant->prenom }}
                                 </h3>
-                                <span class="text-[10px] text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-200 truncate max-w-[150px]">{{ $enfant->ecole->nom }}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-200 truncate max-w-[150px]">{{ $enfant->ecole->nom }}</span>
+                                    
+                                    {{-- Dropdown de partage --}}
+                                    <div class="relative group/share">
+                                        <button class="p-1 hover:bg-gray-200 rounded-full transition-colors focus:outline-none" title="Partager le menu">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 hover:text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                            </svg>
+                                        </button>
+                                        <div class="absolute right-0 top-6 hidden group-hover/share:block hover:block z-50 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1 origin-top-right">
+                                            <a href="https://api.whatsapp.com/send?text={{ urlencode('Voici le menu de '.$enfant->prenom.' : '.route('menus.share', ['school' => $enfant->ecole->nom, 'child' => $enfant->prenom])) }}" target="_blank" class="block px-4 py-2 text-xs text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors flex items-center gap-2">
+                                                <span>WhatsApp</span>
+                                            </a>
+                                            <a href="mailto:?subject={{ urlencode('Menu de la cantine') }}&body={{ urlencode('Voici le menu de '.$enfant->prenom.' : '.route('menus.share', ['school' => $enfant->ecole->nom, 'child' => $enfant->prenom])) }}" class="block px-4 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors flex items-center gap-2">
+                                                <span>Email</span>
+                                            </a>
+                                            <button onclick="navigator.clipboard.writeText('{{ route('menus.share', ['school' => $enfant->ecole->nom, 'child' => $enfant->prenom]) }}')" class="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors flex items-center gap-2">
+                                                <span>Copier le lien</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="menu-content text-sm text-gray-600 min-h-[60px] flex items-center justify-center">
                                 <span class="animate-pulse">Chargement du menu...</span>
@@ -101,6 +123,11 @@
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </div>
                     </div>
+                    @error('school')
+                        <div class="text-red-500 text-xs mt-2 px-1">
+                             {{ $message }}
+                        </div>
+                    @enderror
                     <button type="submit" 
                             class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors shadow-sm">
                         Voir les menus

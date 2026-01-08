@@ -34,18 +34,38 @@
                             <label class="cursor-pointer group">
                                 <input type="radio" name="sexe" value="0" class="peer sr-only">
                                 <div class="px-4 py-2 rounded-md border border-gray-300 text-gray-700 bg-white group-hover:bg-gray-50 peer-checked:bg-blue-500 peer-checked:text-white peer-checked:border-blue-500 transition-all shadow-sm flex items-center gap-2">
-                                    <span>👦</span> Garçon
+                                    Garçon
                                 </div>
                             </label>
                             <label class="cursor-pointer group">
                                 <input type="radio" name="sexe" value="1" class="peer sr-only">
                                 <div class="px-4 py-2 rounded-md border border-gray-300 text-gray-700 bg-white group-hover:bg-gray-50 peer-checked:bg-pink-500 peer-checked:text-white peer-checked:border-pink-500 transition-all shadow-sm flex items-center gap-2">
-                                    <span>👧</span> Fille
+                                    Fille
                                 </div>
                             </label>
                         </div>
                     </div>
 
+                    {{-- Section raccourci "Même école que" --}}
+                    @if(isset($siblings) && $siblings->count() > 0)
+                    <div class="bg-blue-50/50 rounded-lg p-4 border border-blue-100">
+                        <p class="text-xs font-semibold text-blue-800 uppercase tracking-wider mb-2">Choisir la même école que :</p>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach($siblings as $sibling)
+                                @if($sibling->ecole)
+                                <button type="button" 
+                                        class="sibling-school-btn inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-white border border-blue-200 shadow-sm text-gray-700 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 group"
+                                        data-school-id="{{ $sibling->ecole->id }}"
+                                        data-school-name="{{ $sibling->ecole->nom }}">
+                                    <span class="group-hover:text-white">{{ $sibling->prenom }}</span>
+                                </button>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Champ de recherche d'école -->
                     <div>
                         <label for="ecole_input" class="block text-sm font-medium text-gray-700">École</label>
                         <div class="mt-1 relative">
@@ -107,6 +127,52 @@
     const toggleBtn = document.getElementById('toggle-list');
     const submitBtn = document.querySelector('button[type="submit"]');
 
+    // Gestion du clic sur les boutons "Même école que"
+    let currentSiblingSchoolButton = null;
+
+    document.querySelectorAll('.sibling-school-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Si on clique sur le bouton déjà actif, on désélectionne
+            if (currentSiblingSchoolButton === this) {
+                input.value = '';
+                hiddenInput.value = '';
+                
+                this.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                this.classList.add('bg-white', 'text-gray-700', 'border-blue-200');
+                
+                currentSiblingSchoolButton = null;
+                return;
+            }
+
+            const id = this.dataset.schoolId;
+            const name = this.dataset.schoolName;
+            
+            // Remplir les champs
+            input.value = name;
+            hiddenInput.value = id;
+            
+            // Masquer la liste si ouverte
+            list.classList.add('hidden');
+            
+            // Feedback visuel temporaire sur le champ input
+            input.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+            setTimeout(() => {
+                input.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+            }, 600);
+
+            // Désélectionner visuellement les autres boutons
+            document.querySelectorAll('.sibling-school-btn').forEach(b => {
+                b.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                b.classList.add('bg-white', 'text-gray-700', 'border-blue-200');
+            });
+            // Activer celui cliqué (style 'active')
+            this.classList.remove('bg-white', 'text-gray-700', 'border-blue-200');
+            this.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+            
+            currentSiblingSchoolButton = this;
+        });
+    });
+
     function showSuggestions(val) {
         list.innerHTML = '';
         
@@ -139,6 +205,13 @@
     input.addEventListener('input', function() {
         hiddenInput.value = ''; // Reset ID if user types something new
         showSuggestions(this.value);
+
+        // Deselect sibling button if active
+        if (currentSiblingSchoolButton) {
+             currentSiblingSchoolButton.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+             currentSiblingSchoolButton.classList.add('bg-white', 'text-gray-700', 'border-blue-200');
+             currentSiblingSchoolButton = null;
+        }
     });
 
     input.addEventListener('focus', function() {

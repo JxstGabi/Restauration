@@ -1,37 +1,24 @@
 @extends('layouts.app')
 
-@section('title', 'Menus')
+@section('title', 'Menu partagé')
 @section('no_background', true)
 
 @section('header')
 <header class="bg-blue-600 text-white py-6 shadow-md relative">
-    <div class="w-full px-4 flex items-center justify-center relative">
-        <a href="{{ route('map') }}" class="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-blue-500 transition-colors" title="Retour à la carte">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+    <div class="w-full px-4 text-center">
+        @if(isset($childName))
+            <h1 class="text-3xl font-bold">Menu de {{ $childName }}</h1>
+        @else
+            <h1 class="text-3xl font-bold">Menu de la cantine</h1>
+        @endif
+        
+        <div class="mt-2 text-blue-100 flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
-        </a>
-        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center space-x-4">
-            @auth
-                <span class="text-sm text-blue-100 hidden sm:inline">Bonjour, {{ Auth::user()->name }}</span>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="text-sm bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded transition-colors border border-white/20">
-                        Déconnexion
-                    </button>
-                </form>
-            @else
-                <a href="{{ route('login') }}" class="text-sm font-medium text-blue-100 hover:text-white transition-colors">Connexion</a>
-                <a href="{{ route('register') }}" class="px-3 py-1.5 rounded text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 transition-colors shadow-sm">Inscription</a>
-            @endauth
-        </div>
-        <div class="text-center">
-            <h1 class="text-3xl font-bold">Menus de restauration scolaire</h1>
-            @if(request()->get('school'))
-                <p class="text-blue-100 mt-2 text-lg">
-                    École : <strong>{{ request()->get('school') }}</strong>
-                </p>
-            @endif
+            <span class="font-medium bg-blue-700/50 px-3 py-1 rounded-full border border-blue-500/30">
+                {{ $school }}
+            </span>
         </div>
     </div>
 </header>
@@ -72,15 +59,22 @@
             <span class="text-sm text-gray-600">Plat sans viande</span>
         </div>
     </div>
+    
+    <div class="mt-8 text-center">
+         <a href="{{ route('bienvenue') }}" class="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Retour à l'accueil
+        </a>
+    </div>
 
 </main>
 @endsection
 
 @section('scripts')
 <script>
-
 const weekGrid = document.getElementById('weekGrid');
-const searchInput = document.getElementById('searchInput');
 const prevWeekBtn = document.getElementById('prevWeekBtn');
 const nextWeekBtn = document.getElementById('nextWeekBtn');
 const currentWeekRange = document.getElementById('currentWeekRange');
@@ -95,14 +89,12 @@ function getMonday(d) {
     return new Date(d.setDate(diff));
 }
 
-// Fonction utilitaire pour format YYYY-MM-DD local
 function formatDateISO(d) {
     const offset = d.getTimezoneOffset();
     const local = new Date(d.getTime() - (offset * 60 * 1000));
     return local.toISOString().slice(0, 10);
 }
 
-// État courant : Lundi de la semaine affichée
 let currentMonday = getMonday(new Date());
 
 /* ============================
@@ -141,16 +133,10 @@ const mappingMenusEcoles = {
     "ECOLE VERNE": "École élémentaire Jules Verne École maternelle Jules Verne"
 };
 
-/* ============================
-   PARAMÈTRE URL
-============================ */
-function getSchoolParam() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('school');
-}
-const selectedEcole = getSchoolParam();
+// Injection de l'école depuis le contrôleur
+const selectedEcole = @json($school);
 
-// Fonction pour normaliser chaîne (retirer accents, minuscule)
+// Fonction pout normaliser chaîne
 const normalize = s => s ? s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim() : '';
 
 /* ============================
@@ -164,18 +150,13 @@ function loadWeekMenus() {
     nextSunday.setDate(nextSunday.getDate() + 6);
     const endStr = formatDateISO(nextSunday);
 
-    // Mise à jour de l'affichage de la période (Lundi au Vendredi)
     const friday = new Date(currentMonday);
     friday.setDate(friday.getDate() + 4);
     const options = {day: 'numeric', month: 'long'};
     currentWeekRange.textContent = `Semaine du ${currentMonday.toLocaleDateString('fr-FR', options)} au ${friday.toLocaleDateString('fr-FR', options)}`;
 
-    // Indicateur de chargement
     weekGrid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500 flex flex-col items-center"><span class="text-3xl animate-bounce mb-3">🍽️</span><span>Chargement des menus...</span></div>';
 
-    // Récupère en large
-    // Filtre coté client
-    // Utilisation du paramètre q pour une compatibilité plus large sur V1
     let apiUrl =
         "https://data.angers.fr/api/records/1.0/search/?" +
         "dataset=scdl_menus_restauration_scolaire_angers" +
@@ -183,8 +164,6 @@ function loadWeekMenus() {
         "&sort=menudate" +
         "&q=menudate:[" + startStr + " TO " + endStr + "]";
 
-    // Optimisation : Si une école est sélectionnée, on filtre côté API pour éviter la limite de 1000 enregistrements
-    // qui pourrait tronquer les résultats (ex: perdre le Lundi si trop de données)
     let selectedKey = null;
     if (selectedEcole) {
         for (const [key, officialName] of Object.entries(mappingMenusEcoles)) {
@@ -193,7 +172,6 @@ function loadWeekMenus() {
                 break;
             }
         }
-        // Si trouvé, on ajoute le refine
         if (selectedKey) {
             apiUrl += "&refine.menurestaurantnom=" + encodeURIComponent(selectedKey);
         }
@@ -202,26 +180,17 @@ function loadWeekMenus() {
     fetch(apiUrl)
     .then(r => r.json())
     .then(data => {
-
         let records = data.records || [];
 
-        /* ============================
-           FILTRE CLIENT DATE et ECOLE (Sécurité)
-        ============================ */
-        
-        // 1. Filtre par date (sécurité client-side)
         records = records.filter(r => {
             const date = r.fields?.menudate;
             return date >= startStr && date <= endStr;
         });
 
-        // 2. Filtre par école (si pas déjà filtré par l'API ou pour affiner le fuzzy match si refine a échoué)
         if (selectedEcole) {
             if (selectedKey) {
-                // Déjà filtré par API normalement, mais on garde pour cohérence
                 records = records.filter(r => r.fields?.menurestaurantnom === selectedKey);
             } else {
-                // Fallback fuzzy si on n'a pas trouvé de clé exacte pour l'API
                 records = records.filter(r =>
                     normalize(r.fields?.menurestaurantnom).includes(normalize(selectedEcole))
                 );
@@ -233,9 +202,6 @@ function loadWeekMenus() {
             return;
         }
 
-        /* ============================
-           GROUPEMENT PAR JOUR
-        ============================ */
         const grouped = {};
         records.forEach(rec => {
             const f = rec.fields;
@@ -244,31 +210,22 @@ function loadWeekMenus() {
             grouped[date].push(f);
         });
 
-        /* ============================
-           AFFICHAGE EN COLONNES
-        ============================ */
         weekGrid.innerHTML = "";
-
-        // On définit explicitement les jours à afficher : Lundi, Mardi, Jeudi, Vendredi
-        // (Cela évite d'afficher le Mercredi s'il y a des résidus, ou de perdre un jour si l'ordre est mauvais)
-        const daysOffsets = [0, 1, 3, 4]; // Offset depuis currentMonday
         
-        let hasDisplayedAny = false;
-
+        // Jours à afficher : Lundi (0) à Vendredi (4)
+        const daysOffsets = [0, 1, 3, 4];
+        
         daysOffsets.forEach(offset => {
             const d = new Date(currentMonday);
             d.setDate(d.getDate() + offset);
             const dateStr = formatDateISO(d);
             
-            // On vérifie s'il y a des données pour ce jour
-            if (!grouped[dateStr]) return; // On saute les jours vides (fériés, etc.)
+            if (!grouped[dateStr]) return;
             
-            hasDisplayedAny = true;
-            const dateMessages = grouped[dateStr] || [];
+            const dayRecords = grouped[dateStr] || [];
 
             const col = document.createElement('div');
-            // Ajout de min-w-0 pour forcer le retour à la ligne dans la grille, et overflow-hidden par sécurité
-            col.className = "bg-white p-4 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-gray-100 min-h-[350px] flex flex-col hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.12)] transition-all duration-300 transform hover:-translate-y-1 w-full min-w-0 overflow-hidden";
+            col.className = "bg-white p-4 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-gray-100 min-h-[350px] flex flex-col w-full min-w-0 overflow-hidden";
 
             const title = document.createElement('h3');
             title.className = "font-bold text-lg mb-6 text-center pb-4 border-b-2 border-blue-50 text-blue-900 uppercase tracking-wider bg-gradient-to-r from-transparent via-blue-50/50 to-transparent truncate px-2";
@@ -279,22 +236,16 @@ function loadWeekMenus() {
             });
             col.appendChild(title);
 
-            // Regrouper les plats par catégories basées sur 'menuplattype'
             const uniqueMenus = {};
-            const dayRecords = grouped[dateStr] || [];
-
-            // Si c'est mercredi (ou un jour sans données), on laisse uniqueMenus vide
-            // Le rendu affichera juste la colonne avec le titre
             
             dayRecords.forEach(menu => {
                 const restaurantName = menu.menurestaurantnom;
 
                 if (!uniqueMenus[restaurantName]) {
                     uniqueMenus[restaurantName] = {
-                        restaurant: restaurantName,
                         entrees: [],
                         plats: [],
-                        accompagnements: [], // correspond à Garniture
+                        accompagnements: [],
                         laitiers: [],
                         desserts: [],
                         pains: [],
@@ -307,25 +258,15 @@ function loadWeekMenus() {
 
                 if (nom) {
                     const target = uniqueMenus[restaurantName];
-                    let list = null;
+                    let list = target.divers;
 
-                    if (type.includes('entrée') || type.includes('entree')) {
-                        list = target.entrees;
-                    } else if (type.includes('plat')) {
-                        list = target.plats;
-                    } else if (type.includes('garniture') || type.includes('accompagnement') || type.includes('legume')) {
-                        list = target.accompagnements;
-                    } else if (type.includes('laitier') || type.includes('fromage') || type.includes('yaourt')) {
-                        list = target.laitiers;
-                    } else if (type.includes('dessert') || type.includes('fruit') || type.includes('gouter')) {
-                        list = target.desserts;
-                    } else if (type.includes('pain')) {
-                        list = target.pains;
-                    } else {
-                        list = target.divers;
-                    }
+                    if (type.includes('entrée') || type.includes('entree')) list = target.entrees;
+                    else if (type.includes('plat')) list = target.plats;
+                    else if (type.includes('garniture') || type.includes('accompagnement') || type.includes('legume')) list = target.accompagnements;
+                    else if (type.includes('laitier') || type.includes('fromage') || type.includes('yaourt')) list = target.laitiers;
+                    else if (type.includes('dessert') || type.includes('fruit') || type.includes('gouter')) list = target.desserts;
+                    else if (type.includes('pain')) list = target.pains;
 
-                    // Objet plat avec ses propriétés
                     const itemData = {
                         nom: nom,
                         bio: !!(menu.menuplatlabelabio && menu.menuplatlabelabio.trim() !== ""),
@@ -333,19 +274,16 @@ function loadWeekMenus() {
                         sansViande: (menu.menuplatregime && menu.menuplatregime.toLowerCase().includes('sans viande'))
                     };
 
-                    // Vérifier doublon (sur le nom uniquement pour éviter répétition)
                     if (!list.some(i => i.nom === nom)) {
                         list.push(itemData);
                     }
                 }
             });
 
-            // Afficher les menus uniques
             Object.values(uniqueMenus).forEach(menuData => {
                 const box = document.createElement('div');
-                box.className = "mb-4 p-5 rounded-2xl bg-slate-50 border border-slate-100 text-sm shadow-sm hover:bg-white hover:border-blue-100 hover:shadow-md transition-all duration-200 group";
+                box.className = "mb-4 p-5 rounded-2xl bg-slate-50 border border-slate-100 text-sm shadow-sm";
 
-                // Helper pour afficher une ligne
                 const addLine = (colorClass, label, items) => {
                     if (items.length > 0) {
                         const itemsHtml = items.map(item => {
@@ -386,12 +324,8 @@ function loadWeekMenus() {
     });
 }
 
-// Initialisation
 loadWeekMenus();
 
-/* ============================
-   NAVIGATION SEMAINES
-============================ */
 prevWeekBtn.addEventListener('click', () => {
     currentMonday.setDate(currentMonday.getDate() - 7);
     loadWeekMenus();
@@ -401,28 +335,5 @@ nextWeekBtn.addEventListener('click', () => {
     currentMonday.setDate(currentMonday.getDate() + 7);
     loadWeekMenus();
 });
-
-/* ============================
-   FILTRE PAR PLAT
-============================ */
-searchInput.addEventListener('input', () => {
-    const filter = searchInput.value.toLowerCase();
-
-    document.querySelectorAll('#weekGrid > div').forEach(col => {
-        let visible = false;
-
-        col.querySelectorAll('.mb-4').forEach(box => {
-            if (box.textContent.toLowerCase().includes(filter)) {
-                visible = true;
-                box.style.display = "";
-            } else {
-                box.style.display = "none";
-            }
-        });
-
-        col.style.display = visible ? "" : "none";
-    });
-});
-
 </script>
 @endsection

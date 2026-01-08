@@ -26,8 +26,11 @@ class EnfantController extends Controller
      */
     public function create()
     {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $siblings = $user->enfants()->with('ecole')->get();
         $ecoles = EcoleModel::orderBy('nom')->get();
-        return view('enfants.create', compact('ecoles'));
+        return view('enfants.create', compact('ecoles', 'siblings'));
     }
 
     /**
