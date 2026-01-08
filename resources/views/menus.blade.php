@@ -10,6 +10,20 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
             </svg>
         </a>
+        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center space-x-4">
+            @auth
+                <span class="text-sm text-blue-100 hidden sm:inline">Bonjour, {{ Auth::user()->name }}</span>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="text-sm bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded transition-colors border border-white/20">
+                        Déconnexion
+                    </button>
+                </form>
+            @else
+                <a href="{{ route('login') }}" class="text-sm font-medium text-blue-100 hover:text-white transition-colors">Connexion</a>
+                <a href="{{ route('register') }}" class="px-3 py-1.5 rounded text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 transition-colors shadow-sm">Inscription</a>
+            @endauth
+        </div>
         <div class="text-center">
             <h1 class="text-3xl font-bold">Menus de restauration scolaire</h1>
             @if(request()->get('school'))
@@ -25,14 +39,21 @@
 @section('content')
 <main class="w-full px-4 py-8">
 
-    <div class="mb-8 max-w-2xl mx-auto">
-        <input type="text" id="searchInput" placeholder="Rechercher un plat (ex: frites, bio...)"
-               class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm text-gray-700 focus:ring-4 focus:ring-blue-500/30 focus:border-blue-500 focus:outline-none transition-all duration-200">
+    <div class="mb-4 max-w-2xl mx-auto flex gap-2">
+        <button id="prevWeekBtn" class="px-4 py-3 bg-white border border-gray-300 rounded-xl shadow-sm hover:bg-gray-50 text-gray-700 transition-colors">
+            ← Semaine précédente
+        </button>
+        <div class="flex-grow text-center flex items-center justify-center bg-white border border-gray-300 rounded-xl shadow-sm font-semibold text-gray-700 select-none">
+            <span id="currentWeekRange">Chargement...</span>
+        </div>
+        <button id="nextWeekBtn" class="px-4 py-3 bg-white border border-gray-300 rounded-xl shadow-sm hover:bg-gray-50 text-gray-700 transition-colors">
+            Semaine suivante →
+        </button>
     </div>
 
     <!-- Planning hebdomadaire en colonnes -->
     <div class="flex justify-center">
-        <div id="weekGrid" class="grid grid-cols-1 md:grid-cols-5 gap-4 w-full"></div>
+        <div id="weekGrid" class="grid grid-cols-1 md:grid-cols-4 gap-4 w-full"></div>
     </div>
 
     <!-- Légende -->
@@ -59,6 +80,9 @@
 
 const weekGrid = document.getElementById('weekGrid');
 const searchInput = document.getElementById('searchInput');
+const prevWeekBtn = document.getElementById('prevWeekBtn');
+const nextWeekBtn = document.getElementById('nextWeekBtn');
+const currentWeekRange = document.getElementById('currentWeekRange');
 
 /* ============================
    DATE : Lundi de la semaine
@@ -77,9 +101,8 @@ function formatDateISO(d) {
     return local.toISOString().slice(0, 10);
 }
 
-const today = new Date();
-const monday = getMonday(today);
-const start = formatDateISO(monday);
+// État courant : Lundi de la semaine affichée
+let currentMonday = getMonday(new Date());
 
 /* ============================
    MAPPING ÉCOLES
@@ -130,24 +153,52 @@ const selectedEcole = getSchoolParam();
 const normalize = s => s ? s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim() : '';
 
 /* ============================
-   FETCH MENUS
+   FETCH & DISPLAY MENUS
 ============================ */
-const apiUrl =
-    "https://data.angers.fr/api/records/1.0/search/?" +
-    "dataset=scdl_menus_restauration_scolaire_angers" +
-    "&rows=2000" +
-    "&sort=menudate" +
-    "&where=menudate >= '" + start + "'";
+function loadWeekMenus() {
+    const startStr = formatDateISO(currentMonday);
+    
+    // Calcul fin de semaine (Dimanche) pour le filtrage
+    const nextSunday = new Date(currentMonday);
+    nextSunday.setDate(nextSunday.getDate() + 6);
+    const endStr = formatDateISO(nextSunday);
 
-fetch(apiUrl)
+    // Mise à jour de l'affichage de la période (Lundi au Vendredi)
+    const friday = new Date(currentMonday);
+    friday.setDate(friday.getDate() + 4);
+    const options = {day: 'numeric', month: 'long'};
+    currentWeekRange.textContent = `Semaine du ${currentMonday.toLocaleDateString('fr-FR', options)} au ${friday.toLocaleDateString('fr-FR', options)}`;
+
+    // Indicateur de chargement
+    weekGrid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500 flex flex-col items-center"><span class="text-3xl animate-bounce mb-3">🍽️</span><span>Chargement des menus...</span></div>';
+
+    // On récupère large, l'API ne supporte pas toujours bien les filtres complexes en GET simple
+    // On filtrera précisemment côté client
+    // Utilisation du paramètre q pour une compatibilité plus large sur V1
+    const apiUrl =
+        "https://data.angers.fr/api/records/1.0/search/?" +
+        "dataset=scdl_menus_restauration_scolaire_angers" +
+        "&rows=1000" +
+        "&sort=menudate" +
+        "&q=menudate:[" + startStr + " TO " + endStr + "]";
+
+    fetch(apiUrl)
     .then(r => r.json())
     .then(data => {
 
         let records = data.records || [];
 
         /* ============================
-           FILTRE PAR ÉCOLE
+           FILTRE CLIENT DATE et ECOLE
         ============================ */
+        
+        // 1. Filtre par date (sécurité client-side)
+        records = records.filter(r => {
+            const date = r.fields?.menudate;
+            return date >= startStr && date <= endStr;
+        });
+
+        // 2. Filtre par école
         if (selectedEcole) {
             let selectedKey = null;
 
@@ -190,7 +241,8 @@ fetch(apiUrl)
         ============================ */
         weekGrid.innerHTML = "";
 
-        const orderedDates = Object.keys(grouped).sort();
+        // On limite l'affichage aux 4 premiers jours
+        const orderedDates = Object.keys(grouped).sort().slice(0, 4);
 
         orderedDates.forEach(date => {
             const col = document.createElement('div');
@@ -309,8 +361,25 @@ fetch(apiUrl)
     })
     .catch(err => {
         console.error('Erreur:', err);
-        weekGrid.innerHTML = '<div class="text-sm text-red-500 p-4">Erreur lors du chargement des menus.</div>';
+        weekGrid.innerHTML = '<div class="col-span-full text-center text-red-500 p-4">Erreur lors du chargement des menus.</div>';
     });
+}
+
+// Initialisation
+loadWeekMenus();
+
+/* ============================
+   NAVIGATION SEMAINES
+============================ */
+prevWeekBtn.addEventListener('click', () => {
+    currentMonday.setDate(currentMonday.getDate() - 7);
+    loadWeekMenus();
+});
+
+nextWeekBtn.addEventListener('click', () => {
+    currentMonday.setDate(currentMonday.getDate() + 7);
+    loadWeekMenus();
+});
 
 /* ============================
    FILTRE PAR PLAT

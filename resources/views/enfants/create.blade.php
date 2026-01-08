@@ -1,0 +1,133 @@
+@extends('layouts.app')
+
+@section('title', 'Ajouter un enfant - Restauration Scolaire')
+
+@section('header')
+<header class="bg-blue-600 text-white py-6 shadow-md relative">
+    <div class="w-full px-4 text-center">
+        <h1 class="text-3xl font-bold">Ajouter un enfant</h1>
+    </div>
+</header>
+@endsection
+
+@section('content')
+<div class="max-w-md mx-auto px-4 py-8">
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="p-8">
+            <form action="{{ route('enfants.store') }}" method="POST">
+                @csrf
+                
+                <div class="space-y-6">
+                    <div>
+                        <label for="prenom" class="block text-sm font-medium text-gray-700">Prénom de l'enfant</label>
+                        <div class="mt-1">
+                            <input type="text" name="prenom" id="prenom" required class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-4 py-2 border" placeholder="Ex: Léo">
+                        </div>
+                        @error('prenom')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="ecole_input" class="block text-sm font-medium text-gray-700">École</label>
+                        <div class="mt-1 relative">
+                            <input type="hidden" name="ecole_id" id="ecole_id" required>
+                            <input type="text" 
+                                   id="ecole_input" 
+                                   class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-4 py-2 border" 
+                                   placeholder="Rechercher une école..."
+                                   autocomplete="off">
+                            
+                            <!-- Liste de suggestions -->
+                            <ul id="suggestions-list" class="absolute z-50 w-full bg-white border border-gray-200 mt-1 max-h-48 overflow-y-auto rounded-md shadow-lg hidden text-left divide-y divide-gray-100"></ul>
+                            
+                            <div id="toggle-list" class="absolute inset-y-0 right-0 flex items-center px-2 text-gray-400 cursor-pointer hover:text-blue-600 transition-colors">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                        @error('ecole_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="pt-4 flex items-center justify-between">
+                        <a href="{{ route('enfants.index') }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">
+                            Annuler
+                        </a>
+                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Enregistrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+    const schools = @json($ecoles);
+    const input = document.getElementById('ecole_input');
+    const hiddenInput = document.getElementById('ecole_id');
+    const list = document.getElementById('suggestions-list');
+    const toggleBtn = document.getElementById('toggle-list');
+    const submitBtn = document.querySelector('button[type="submit"]');
+
+    function showSuggestions(val) {
+        list.innerHTML = '';
+        
+        const filtered = val 
+            ? schools.filter(s => s.nom.toLowerCase().includes(val.toLowerCase()))
+            : schools;
+        
+        if (filtered.length > 0) {
+            filtered.forEach(school => {
+                const li = document.createElement('li');
+                li.textContent = school.nom;
+                li.className = "px-4 py-3 hover:bg-blue-50 cursor-pointer text-gray-700 text-sm transition-colors";
+                li.onclick = () => {
+                    input.value = school.nom;
+                    hiddenInput.value = school.id;
+                    list.classList.add('hidden');
+                };
+                list.appendChild(li);
+            });
+            list.classList.remove('hidden');
+        } else {
+            const li = document.createElement('li');
+            li.textContent = "Aucune école trouvée";
+            li.className = "px-4 py-3 text-gray-400 text-sm italic";
+            list.appendChild(li);
+            list.classList.remove('hidden');
+        }
+    }
+
+    input.addEventListener('input', function() {
+        hiddenInput.value = ''; // Reset ID if user types something new
+        showSuggestions(this.value);
+    });
+
+    input.addEventListener('focus', function() {
+        showSuggestions(this.value);
+    });
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (list.classList.contains('hidden')) {
+                showSuggestions(input.value);
+            } else {
+                list.classList.add('hidden');
+            }
+        });
+    }
+
+    // Ferme la liste si clic en dehors
+    document.addEventListener('click', function(e) {
+        if (!input.contains(e.target) && !list.contains(e.target) && !toggleBtn.contains(e.target)) {
+            list.classList.add('hidden');
+        }
+    });
+</script>
+@endsection

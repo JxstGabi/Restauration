@@ -43,6 +43,20 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                 </svg>
             </a>
+            <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center space-x-4">
+                @auth
+                    <span class="text-sm text-blue-100 hidden sm:inline">Bonjour, {{ Auth::user()->name }}</span>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="text-sm bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded transition-colors border border-white/20">
+                            Déconnexion
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="text-sm font-medium text-blue-100 hover:text-white transition-colors">Connexion</a>
+                    <a href="{{ route('register') }}" class="px-3 py-1.5 rounded text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 transition-colors shadow-sm">Inscription</a>
+                @endauth
+            </div>
             <div class="text-center">
                 <h1 class="text-3xl font-bold">Carte des écoles d'Angers</h1>
                 <p class="text-blue-100 mt-1">Localisez facilement les établissements scolaires</p>
